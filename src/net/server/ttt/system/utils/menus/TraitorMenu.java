@@ -13,6 +13,7 @@ public class TraitorMenu {
 
     // TODO this
 
+
     static List<ItemStack> itemList = new ArrayList<>();
     static{
         for(String s : TTTItemList.traitorBuyMap.keySet())
