@@ -17,7 +17,6 @@ public class TraitorMenu {
     static{
         for(String s : TTTItemList.traitorBuyMap.keySet())
             itemList.add(TTTItemList.traitorBuyMap.get(s).getItem());
-        System.out.println("test");
     }
 
 
