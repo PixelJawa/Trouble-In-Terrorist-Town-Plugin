@@ -1,0 +1,10 @@
+name: TroubleInTerroristTown
+version: 1.0.0
+api-version: 1.15
+main: net.server.ttt.main.Main
+author: PixelJawa
+description: Adds the minigame TTT to the server.
+commands:
+  tttJoin:
+    description: automatically connect to a ttt server
+    usage: /tttJoin

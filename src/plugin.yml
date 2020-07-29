@@ -1,0 +1,13 @@
+name: TTT
+version: 1.0.0
+api-version: 1.15
+main: net.server.ttt.main.Main
+author: PixelJawa
+description: Adds the minigame TTT to the server.
+commands:
+  tttJoin:
+    description: Automatically connect to a TTT server.
+    usage: /tttJoin
+  tttReady:
+    description: Ready up to start a TTT game.
+    usage: /tttReady
