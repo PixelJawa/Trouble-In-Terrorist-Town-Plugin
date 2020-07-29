@@ -19,7 +19,6 @@ public class TraitorMenu {
             itemList.add(TTTItemList.traitorBuyMap.get(s).getItem());
     }
 
-
     public Inventory genInv() {
 
         Inventory inv = Bukkit.createInventory(null, 9, ChatColor.DARK_RED + "Traitor Shop");
