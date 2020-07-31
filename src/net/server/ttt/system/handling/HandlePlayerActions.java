@@ -10,7 +10,13 @@ import org.bukkit.EntityEffect;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class HandlePlayerActions {
+
+    public static Map<Player, Integer> karmaMap = new HashMap<>();
+    public static Map<Player, Integer> creditsMap = new HashMap<>();
 
     public static void setSpectator(Player player) {
         World world = player.getWorld();
@@ -32,7 +38,6 @@ public class HandlePlayerActions {
         thread.aliveGood.remove(player);
         thread.dead.add(player);
     }
-
     // reset everything that has been changed about the player
     public static void resetPlayer(Player player, GameThread thread) {
 
@@ -53,7 +58,14 @@ public class HandlePlayerActions {
         // make custom name visible
         player.setCustomNameVisible(true);
 
+        // eject from NPC packet reader
         CorpsePacketReader.eject(player);
+
+        // remove player from all teams
+        HandleScoreboard.playerClearTeams(player);
+
+        // clear player scoreboard
+        HandleScoreboard.clearBoard(player);
     }
 
     // damages the given player for the given amount (takes armor in account)
@@ -85,5 +97,62 @@ public class HandlePlayerActions {
         target.setHealth(target.getHealth() - postDamage);
         target.playEffect(EntityEffect.HURT);
 
+    }
+
+
+    public static int getKarma(Player player) {
+        if(!karmaMap.containsKey(player)) {
+            karmaMap.put(player, 100);
+            return 100;
+        }
+
+        return karmaMap.get(player);
+    }
+    public static void removeKarma(Player player, int amount) {
+
+        int min = Main.getInstance().getConfig().getInt("Karma.min");
+        int value = getKarma(player) - amount;
+
+        if(value < min)
+            value = min;
+
+        karmaMap.put(player, value);
+    }
+    public static void addKarma(Player player, int amount) {
+        int max = Main.getInstance().getConfig().getInt("Karma.max");
+        int value = getKarma(player) + amount;
+
+        if(value > max)
+            value = max;
+
+        karmaMap.put(player, value);
+    }
+    public static void resetKarma(Player player) {
+        karmaMap.put(player, 100);
+    }
+
+    public static int getCredits(Player player) {
+        if(!creditsMap.containsKey(player)) {
+            creditsMap.put(player, 0);
+            return 0;
+        }
+
+        return creditsMap.get(player);
+    }
+    public static void removeCredits(Player player, int amount) {
+
+        int value = getCredits(player) - amount;
+
+        if(value < 0)
+            value = 0;
+
+        creditsMap.put(player, value);
+    }
+    public static void addCredits(Player player, int amount) {
+        int value = getKarma(player) + amount;
+        creditsMap.put(player, value);
+    }
+    public static void resetCredits(Player player) {
+        creditsMap.remove(player);
     }
 }

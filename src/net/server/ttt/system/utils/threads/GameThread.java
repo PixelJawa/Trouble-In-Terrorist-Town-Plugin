@@ -2,6 +2,7 @@ package net.server.ttt.system.utils.threads;
 
 import net.server.ttt.main.Main;
 import net.server.ttt.system.handling.HandleGame;
+import net.server.ttt.system.handling.HandleScoreboard;
 import net.server.ttt.system.utils.corpse.CorpsePacketReader;
 import net.server.ttt.system.utils.enums.Role;
 import org.bukkit.Bukkit;
@@ -36,6 +37,7 @@ public class GameThread extends BukkitRunnable {
 
     public List<Player> alive = new ArrayList<>();
     public List<Player> dead = new ArrayList<>();
+    public List<Player> confirmedDead = new ArrayList<>();
 
 
 
@@ -62,6 +64,8 @@ public class GameThread extends BukkitRunnable {
                 p.setGameMode(GameMode.ADVENTURE);
                 // inject corpse packet reader
                 CorpsePacketReader.inject(p);
+                // update score board objectives
+                HandleScoreboard.updateObjectives(p);
             }
 
             // fill up lists
@@ -204,8 +208,12 @@ public class GameThread extends BukkitRunnable {
         }
 
         // called every tick
-        HandleGame.updateBadTeamTab(world);
-        HandleGame.updateGoodTeamTab(world);
+        HandleScoreboard.updateSettingsBoard(world);
+        HandleScoreboard.updateTraitorBoard(world);
+        HandleScoreboard.updateDetectiveBoard(world);
+        HandleScoreboard.updateInnocentBoard(world);
+//        HandleGame.updateBadTeamTab(world);
+//        HandleGame.updateGoodTeamTab(world);
 
         // stop thread if world doesn't exist
         if(!Bukkit.getWorlds().contains(world)) {
@@ -214,4 +222,14 @@ public class GameThread extends BukkitRunnable {
 
     }
 
+
+    public String getTimeInMinAsString() {
+
+        double timeInSec = (double) this.count / (double) this.ticksPerSecond;
+
+        int min = (int) Math.ceil(timeInSec / 60);
+        int sec = (int) timeInSec % 60;
+
+        return min + ":" + sec;
+    }
 }
