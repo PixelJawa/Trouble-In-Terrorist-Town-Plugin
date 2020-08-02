@@ -64,8 +64,8 @@ public class GameThread extends BukkitRunnable {
                 p.setGameMode(GameMode.ADVENTURE);
                 // inject corpse packet reader
                 CorpsePacketReader.inject(p);
-                // update score board objectives
-                HandleScoreboard.updateObjectives(p);
+                // set scoreboard
+                HandleScoreboard.setBoard(p);
             }
 
             // fill up lists
@@ -208,12 +208,16 @@ public class GameThread extends BukkitRunnable {
         }
 
         // called every tick
-        HandleScoreboard.updateSettingsBoard(world);
-        HandleScoreboard.updateTraitorBoard(world);
-        HandleScoreboard.updateDetectiveBoard(world);
-        HandleScoreboard.updateInnocentBoard(world);
-//        HandleGame.updateBadTeamTab(world);
-//        HandleGame.updateGoodTeamTab(world);
+            HandleScoreboard.updateSettingsBoard(world);
+            HandleScoreboard.updateTraitorBoard(world);
+            HandleScoreboard.updateDetectiveBoard(world);
+            HandleScoreboard.updateInnocentBoard(world);
+//          HandleGame.updateBadTeamTab(world);
+//          HandleGame.updateGoodTeamTab(world);
+
+            for(Player p : players) {
+                HandleScoreboard.updateObjectives(p);
+            }
 
         // stop thread if world doesn't exist
         if(!Bukkit.getWorlds().contains(world)) {

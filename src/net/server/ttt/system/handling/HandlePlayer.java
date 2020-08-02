@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HandlePlayerActions {
+public class HandlePlayer {
 
     public static Map<Player, Integer> karmaMap = new HashMap<>();
     public static Map<Player, Integer> creditsMap = new HashMap<>();
@@ -66,6 +66,9 @@ public class HandlePlayerActions {
 
         // clear player scoreboard
         HandleScoreboard.clearBoard(player);
+
+        // clear Traitor and Detective credits
+        HandlePlayer.resetCredits(player);
     }
 
     // damages the given player for the given amount (takes armor in account)

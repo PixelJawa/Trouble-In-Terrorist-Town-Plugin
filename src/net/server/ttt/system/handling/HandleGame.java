@@ -672,7 +672,8 @@ public class HandleGame implements Listener {
         if(!gameThreadMap.containsKey(world)) return;
 
         GameThread thread = gameThreadMap.get(world);
-        HandlePlayerActions.resetPlayer(player, thread);
+
+        HandlePlayer.resetPlayer(player, thread);
     }
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
@@ -684,7 +685,7 @@ public class HandleGame implements Listener {
         if(!gameThreadMap.containsKey(world)) return;
 
         GameThread thread = gameThreadMap.get(world);
-        HandlePlayerActions.resetPlayer(player, thread);
+        HandlePlayer.resetPlayer(player, thread);
     }
 
     // stop items from merging

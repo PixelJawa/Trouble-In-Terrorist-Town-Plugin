@@ -8,29 +8,39 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class HandleScoreboard {
-
-    // TODO objectives of boards
 
     static ScoreboardManager manager = Bukkit.getScoreboardManager();
 
     public static Scoreboard settingsBoard = manager.getNewScoreboard();
     static {
-        settingsBoard.registerNewTeam("T");
-        settingsBoard.registerNewTeam("D");
-        settingsBoard.registerNewTeam("I");
-        settingsBoard.registerNewTeam("C");
+        Team traitor = settingsBoard.registerNewTeam("T");
+        Team detective = settingsBoard.registerNewTeam("D");
+        Team innocent = settingsBoard.registerNewTeam("I");
+
+        traitor.setCanSeeFriendlyInvisibles(true);
+        traitor.setAllowFriendlyFire(true);
+        traitor.setColor(ChatColor.DARK_RED);
+
+        detective.setCanSeeFriendlyInvisibles(true);
+        detective.setAllowFriendlyFire(true);
+        detective.setColor(ChatColor.DARK_BLUE);
+
+        innocent.setCanSeeFriendlyInvisibles(false);
+        innocent.setAllowFriendlyFire(true);
+        innocent.setColor(ChatColor.GREEN);
     }
     public static Scoreboard traitorBoard = manager.getNewScoreboard();
     static {
-        traitorBoard.registerNewTeam("T");
-        traitorBoard.registerNewTeam("D");
-        traitorBoard.registerNewTeam("I");
-        traitorBoard.registerNewTeam("C");
+        Team traitor = traitorBoard.getTeam("T");
+        Team detective = traitorBoard.getTeam("D");
+        Team innocent = traitorBoard.getTeam("I");
+        Team confirmed = traitorBoard.getTeam("C");
+
+        traitor.setColor(ChatColor.DARK_RED);
+        detective.setColor(ChatColor.DARK_BLUE);
+        innocent.setColor(ChatColor.GREEN);
+        confirmed.setColor(ChatColor.GRAY);
 
         // objectives
         traitorBoard.registerNewObjective("role", "dummy", ChatColor.DARK_RED + "Traitor");
@@ -46,9 +56,13 @@ public class HandleScoreboard {
     }
     public static Scoreboard detectiveBoard = manager.getNewScoreboard();
     static {
-        detectiveBoard.registerNewTeam("D");
-        detectiveBoard.registerNewTeam("O");
-        detectiveBoard.registerNewTeam("C");
+        Team detective = detectiveBoard.getTeam("D");
+        Team other = detectiveBoard.getTeam("O");
+        Team confirmed = detectiveBoard.getTeam("C");
+
+        detective.setColor(ChatColor.DARK_BLUE);
+        other.setColor(ChatColor.GREEN);
+        confirmed.setColor(ChatColor.GRAY);
 
         // objectives
         detectiveBoard.registerNewObjective("role", "dummy", ChatColor.DARK_BLUE + "Detective");
@@ -59,14 +73,18 @@ public class HandleScoreboard {
         Objective karma = detectiveBoard.registerNewObjective("karma", "dummy", "Karma:");
         karma.getScore(ChatColor.AQUA + "");
 
-        Objective time = detectiveBoard.registerNewObjective("points", "dummy", "Time Left:");
+        Objective time = detectiveBoard.registerNewObjective("time", "dummy", "Time Left:");
         time.getScore(ChatColor.GOLD + "");
     }
     public static Scoreboard innocentBoard = manager.getNewScoreboard();
     static {
-        innocentBoard.registerNewTeam("D");
-        innocentBoard.registerNewTeam("O");
-        innocentBoard.registerNewTeam("C");
+        Team detective = innocentBoard.getTeam("D");
+        Team other = innocentBoard.getTeam("0");
+        Team confirmed = innocentBoard.getTeam("C");
+
+        detective.setColor(ChatColor.DARK_BLUE);
+        other.setColor(ChatColor.GREEN);
+        confirmed.setColor(ChatColor.GRAY);
 
         // objectives
         innocentBoard.registerNewObjective("role", "dummy", ChatColor.GREEN + "Innocent");
@@ -74,7 +92,7 @@ public class HandleScoreboard {
         Objective karma = innocentBoard.registerNewObjective("karma", "dummy", "Karma:");
         karma.getScore(ChatColor.AQUA + "");
 
-        Objective time = innocentBoard.registerNewObjective("points", "dummy", "Time Left:");
+        Objective time = innocentBoard.registerNewObjective("time", "dummy", "Time Left:");
         time.getScore(ChatColor.GOLD + "");
     }
 
@@ -86,11 +104,6 @@ public class HandleScoreboard {
         if(!world.hasMetadata("ttt_world")) return;
         if(!HandleGame.gameThreadMap.containsKey(world)) return;
 
-        Team traitor = settingsBoard.getTeam("T");
-        Team detective = settingsBoard.getTeam("D");
-        Team innocent = settingsBoard.getTeam("I");
-
-
         for(Player p : world.getPlayers()) {
 
             if(!p.hasMetadata("ttt_role")) continue;
@@ -101,31 +114,18 @@ public class HandleScoreboard {
 
             switch (role) {
                 case TRAITOR:
-                    traitor.addEntry(p.getName());
+                    settingsBoard.getTeam("T").addEntry(p.getName());
                     break;
                 case DETECTIVE:
-                    detective.addEntry(p.getName());
+                    settingsBoard.getTeam("D").addEntry(p.getName());
                     break;
                 case INNOCENT:
-                    innocent.addEntry(p.getName());
+                    settingsBoard.getTeam("I").addEntry(p.getName());
                     break;
             }
 
         }
 
-        traitor.setCanSeeFriendlyInvisibles(true);
-        traitor.setAllowFriendlyFire(true);
-        traitor.setColor(ChatColor.DARK_RED);
-
-        detective.setCanSeeFriendlyInvisibles(true);
-        detective.setAllowFriendlyFire(true);
-        detective.setColor(ChatColor.DARK_BLUE);
-
-        innocent.setCanSeeFriendlyInvisibles(false);
-        innocent.setAllowFriendlyFire(true);
-        innocent.setColor(ChatColor.GREEN);
-
-        //settingsBoardMap.put(world, board);
     }
     public static void updateTraitorBoard(World world) {
 
@@ -135,11 +135,6 @@ public class HandleScoreboard {
         GameThread thread = HandleGame.gameThreadMap.get(world);
 
         // teams
-            Team traitor = traitorBoard.getTeam("T");
-            Team detective = traitorBoard.getTeam("D");
-            Team innocent = traitorBoard.getTeam("I");
-            Team confirmed = traitorBoard.getTeam("C");
-
             for(Player p : world.getPlayers()) {
 
                 if(!p.hasMetadata("ttt_role")) continue;
@@ -148,7 +143,7 @@ public class HandleScoreboard {
 
                 // check if player is dead
                 if(thread.dead.contains(p)) {
-                    confirmed.addEntry(p.getName());
+                    traitorBoard.getTeam("C").addEntry(p.getName());
                     continue;
                 }
 
@@ -156,23 +151,19 @@ public class HandleScoreboard {
                 Role role = (Role) p.getMetadata("ttt_role").get(0).value();
                 switch (role) {
                     case TRAITOR:
-                        traitor.addEntry(p.getName());
+                        traitorBoard.getTeam("T").addEntry(p.getName());
                         break;
                     case DETECTIVE:
-                        detective.addEntry(p.getName());
+                        traitorBoard.getTeam("D").addEntry(p.getName());
                         break;
                     case INNOCENT:
-                        innocent.addEntry(p.getName());
+                        traitorBoard.getTeam("I").addEntry(p.getName());
                         break;
                 }
 
             }
 
-            traitor.setColor(ChatColor.DARK_RED);
-            detective.setColor(ChatColor.DARK_BLUE);
-            innocent.setColor(ChatColor.GREEN);
-            confirmed.setColor(ChatColor.GRAY);
-
+        // objectives
     }
     public static void updateDetectiveBoard(World world) {
 
@@ -183,10 +174,6 @@ public class HandleScoreboard {
 
         GameThread thread = HandleGame.gameThreadMap.get(world);
 
-        Team detective = traitorBoard.getTeam("D");
-        Team other = traitorBoard.getTeam("0");
-        Team confirmed = traitorBoard.getTeam("C");
-
         for(Player p : world.getPlayers()) {
 
             if(!p.hasMetadata("ttt_role")) continue;
@@ -194,27 +181,18 @@ public class HandleScoreboard {
             playerClearTeams(p);
 
             if(thread.confirmedDead.contains(p)) {
-                confirmed.addEntry(p.getName());
+                detectiveBoard.getTeam("C").addEntry(p.getName());
                 continue;
             }
 
             Role role = (Role) p.getMetadata("ttt_role").get(0).value();
-            switch (role) {
-                case DETECTIVE:
-                    detective.addEntry(p.getName());
-                    break;
-                default:
-                    other.addEntry(p.getName());
-                    break;
+            if (role == Role.DETECTIVE) {
+                detectiveBoard.getTeam("D").addEntry(p.getName());
+            } else {
+                detectiveBoard.getTeam("O").addEntry(p.getName());
             }
 
         }
-
-        detective.setColor(ChatColor.DARK_BLUE);
-        other.setColor(ChatColor.GREEN);
-        confirmed.setColor(ChatColor.GRAY);
-
-        //detectiveBoardMap.put(world, board);
     }
     public static void updateInnocentBoard(World world) {
 
@@ -225,37 +203,24 @@ public class HandleScoreboard {
 
         GameThread thread = HandleGame.gameThreadMap.get(world);
 
-        Team detective = traitorBoard.getTeam("D");
-        Team other = traitorBoard.getTeam("0");
-        Team confirmed = traitorBoard.getTeam("C");
-
         for(Player p : world.getPlayers()) {
 
             if(!p.hasMetadata("ttt_role")) continue;
 
             if(thread.confirmedDead.contains(p)) {
-                confirmed.addEntry(p.getName());
+                innocentBoard.getTeam("C").addEntry(p.getName());
                 continue;
             }
 
             Role role = (Role) p.getMetadata("ttt_role").get(0).value();
 
-            switch (role) {
-                case DETECTIVE:
-                    detective.addEntry(p.getName());
-                    break;
-                default:
-                    other.addEntry(p.getName());
-                    break;
+            if (role == Role.DETECTIVE) {
+                innocentBoard.getTeam("D").addEntry(p.getName());
+            } else {
+                innocentBoard.getTeam("O").addEntry(p.getName());
             }
 
         }
-
-        detective.setColor(ChatColor.DARK_BLUE);
-        other.setColor(ChatColor.GREEN);
-        confirmed.setColor(ChatColor.GRAY);
-
-        //innocentBoardMap.put(world, board);
     }
 
     public static void updateObjectives(Player player) {
@@ -271,35 +236,38 @@ public class HandleScoreboard {
         Role role = (Role) player.getMetadata("ttt_role").get(0).value();
 
         switch (role) {
-            case TRAITOR:
+            case TRAITOR: {
                 Objective tPoints = traitorBoard.getObjective("points");
-                tPoints.getScore(ChatColor.DARK_RED + String.valueOf(HandlePlayerActions.getCredits(player)));
+                tPoints.getScore(ChatColor.DARK_RED + String.valueOf(HandlePlayer.getCredits(player)));
 
                 Objective tKarma = traitorBoard.getObjective("karma");
-                tKarma.getScore(ChatColor.AQUA + String.valueOf(HandlePlayerActions.getKarma(player)));
+                tKarma.getScore(ChatColor.AQUA + String.valueOf(HandlePlayer.getKarma(player)));
 
                 Objective tTime = traitorBoard.getObjective("time");
                 tTime.getScore(ChatColor.GOLD + thread.getTimeInMinAsString());
                 break;
+            }
 
-            case DETECTIVE:
+            case DETECTIVE: {
                 Objective dPoints = detectiveBoard.getObjective("points");
-                dPoints.getScore(ChatColor.DARK_BLUE + String.valueOf(HandlePlayerActions.getCredits(player)));
+                dPoints.getScore(ChatColor.DARK_BLUE + String.valueOf(HandlePlayer.getCredits(player)));
 
                 Objective dKarma = detectiveBoard.getObjective("karma");
-                dKarma.getScore(ChatColor.AQUA + String.valueOf(HandlePlayerActions.getKarma(player)));
+                dKarma.getScore(ChatColor.AQUA + String.valueOf(HandlePlayer.getKarma(player)));
 
                 Objective dTime = detectiveBoard.getObjective("time");
                 dTime.getScore(ChatColor.GOLD + thread.getTimeInMinAsString());
                 break;
+            }
 
-            case INNOCENT:
+            case INNOCENT: {
                 Objective iKarma = innocentBoard.getObjective("karma");
-                iKarma.getScore(ChatColor.AQUA + String.valueOf(HandlePlayerActions.getKarma(player)));
+                iKarma.getScore(ChatColor.AQUA + String.valueOf(HandlePlayer.getKarma(player)));
 
                 Objective iTime = innocentBoard.getObjective("time");
                 iTime.getScore(ChatColor.GOLD + thread.getTimeInMinAsString());
                 break;
+            }
         }
 
     }
@@ -340,7 +308,5 @@ public class HandleScoreboard {
         for(Team t : innocentBoard.getTeams())
             t.removeEntry(player.getName());
     }
-
-
 
 }

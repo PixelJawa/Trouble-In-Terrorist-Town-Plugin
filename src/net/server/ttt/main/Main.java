@@ -4,6 +4,7 @@ import net.server.ttt.system.commands.user.TTTJoin;
 import net.server.ttt.system.commands.user.TTTReady;
 import net.server.ttt.system.handling.HandleGame;
 import net.server.ttt.system.handling.HandleItems;
+import net.server.ttt.system.handling.HandleShop;
 import net.server.ttt.system.handling.HandleWorldCreation;
 import net.server.ttt.system.utils.YAMLManager;
 import net.server.ttt.system.utils.events.EventCaller;
@@ -35,6 +36,8 @@ public class Main extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new HandleGame(), this);
         Bukkit.getPluginManager().registerEvents(new HandleItems(), this);
         Bukkit.getPluginManager().registerEvents(new EventCaller(), this);
+        Bukkit.getPluginManager().registerEvents(new HandleShop(), this);
+
 //commands
         // register in the executor class
         getCommand("tttJoin").setExecutor(new TTTJoin());

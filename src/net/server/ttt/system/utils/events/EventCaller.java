@@ -1,6 +1,6 @@
 package net.server.ttt.system.utils.events;
 
-import net.server.ttt.system.handling.HandlePlayerActions;
+import net.server.ttt.system.handling.HandlePlayer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,7 +24,7 @@ public class EventCaller implements Listener {
         event.setCancelled(true);
         double damage = event.getDamage();
 
-        HandlePlayerActions.damagePlayer(target, source, damage, "melee");
+        HandlePlayer.damagePlayer(target, source, damage, "melee");
     }
 
 }
