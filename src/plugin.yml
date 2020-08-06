@@ -11,3 +11,6 @@ commands:
   tttReady:
     description: Ready up to start a TTT game.
     usage: /tttReady
+  tttGive:
+    description: Gives you the tttItem based onthe given id.
+    usage: /tttGive <id>

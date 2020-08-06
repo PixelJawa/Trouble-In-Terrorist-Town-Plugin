@@ -69,6 +69,9 @@ public class HandlePlayer {
 
         // clear Traitor and Detective credits
         HandlePlayer.resetCredits(player);
+
+        // remove player form holding right click list
+        HandleItems.holding.remove(player);
     }
 
     // damages the given player for the given amount (takes armor in account)
@@ -113,7 +116,7 @@ public class HandlePlayer {
     }
     public static void removeKarma(Player player, int amount) {
 
-        int min = Main.getInstance().getConfig().getInt("Karma.min");
+        int min = Main.getInstance().getConfig().getInt("karma.min");
         int value = getKarma(player) - amount;
 
         if(value < min)
@@ -122,7 +125,7 @@ public class HandlePlayer {
         karmaMap.put(player, value);
     }
     public static void addKarma(Player player, int amount) {
-        int max = Main.getInstance().getConfig().getInt("Karma.max");
+        int max = Main.getInstance().getConfig().getInt("karma.max");
         int value = getKarma(player) + amount;
 
         if(value > max)

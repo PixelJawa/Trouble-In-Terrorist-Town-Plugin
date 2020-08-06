@@ -1,20 +1,18 @@
 package net.server.ttt.system.items;
 
-import net.server.ttt.system.utils.enums.WeaponType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public abstract class TTTItem {
 
-    public abstract void leftAction();
-    public abstract void rightAction();
+    public abstract void leftAction(Player player);
+    public abstract void rightAction(Player player);
 
-    public abstract boolean conditionsClear();
-    public abstract void consumeAmmo();
+    public abstract boolean conditionsClear(Player player);
     public abstract String getId();
-    public abstract WeaponType getWeaponType();
+
     public abstract String getName();
 
-    public abstract ItemStack getItem();
-    public abstract ItemStack getAmmo();
+    public abstract ItemStack getItemStack();
 
 }

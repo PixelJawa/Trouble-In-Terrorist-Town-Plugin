@@ -12,9 +12,9 @@ public class YAMLManager {
         String minPlayers = "Min.Players";
         String maxWorlds = "Max.Worlds";
         String threadTickRate = "Thread.TickRate"; // mc ticks per thread tick
-        String scanRadius = "Scan.Radius";
-        String minKarma = "Karma.min";
-        String maxKarma = "Karma.max";
+        String scanRadius = "scan.radius";
+        String minKarma = "karma.min";
+        String maxKarma = "karma.max";
 
         FileConfiguration config = plugin.getConfig();
 
@@ -22,7 +22,7 @@ public class YAMLManager {
         config.addDefault(minPlayers, 4);
         config.addDefault(maxWorlds, 4);
         config.addDefault(threadTickRate, 1);
-        config.addDefault(scanRadius, 500);
+        config.addDefault(scanRadius, 150);
         config.addDefault(minKarma, 5);
         config.addDefault(maxKarma, 100);
 

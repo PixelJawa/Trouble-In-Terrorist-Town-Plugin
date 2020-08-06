@@ -26,7 +26,6 @@ public class TTTReady implements CommandExecutor {
         // inti vars
         Player player = (Player) sender;
 
-        // loop through all worlds and join the first open one
         if(cmd.getName().equalsIgnoreCase("tttReady")) {
 
             if(!player.getWorld().hasMetadata("ttt_world")) {
@@ -35,6 +34,7 @@ public class TTTReady implements CommandExecutor {
             }
 
             HandleGame.readyPlayer(player, player.getWorld());
+            return true;
         }
         return false;
     }

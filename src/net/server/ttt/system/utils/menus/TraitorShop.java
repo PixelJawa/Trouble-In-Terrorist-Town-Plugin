@@ -16,7 +16,7 @@ public class TraitorShop {
     static List<ItemStack> itemList = new ArrayList<>();
     static{
         for(String s : TTTItemList.traitorBuyMap.keySet())
-            itemList.add(TTTItemList.traitorBuyMap.get(s).getItem());
+            itemList.add(TTTItemList.traitorBuyMap.get(s).getItemStack());
     }
 
     public static Inventory genInv() {

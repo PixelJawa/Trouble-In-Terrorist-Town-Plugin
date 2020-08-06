@@ -4,6 +4,7 @@ import net.minecraft.server.v1_15_R1.*;
 import net.server.ttt.main.Main;
 import net.server.ttt.system.items.TTTItem;
 import net.server.ttt.system.items.TTTItemList;
+import net.server.ttt.system.items.TTTItemWeapon;
 import net.server.ttt.system.utils.corpse.CorpseManager;
 import net.server.ttt.system.utils.enums.*;
 import net.server.ttt.system.utils.corpse.Corpse;
@@ -16,7 +17,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,6 +28,8 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -41,6 +43,8 @@ public class HandleGame implements Listener {
     public static Map<ArmorStand, SuperItemBoxThread>  superItemThreadMap = new HashMap<>();
     public static Map<World, List<Player> > readyMap = new HashMap<>();
 
+    static Plugin plugin = Main.getInstance();
+
     // start the game in the given world
     public static void startGame(World world) {
 
@@ -48,11 +52,11 @@ public class HandleGame implements Listener {
         if(!world.hasMetadata("ttt_world")) return;
 
         // set world state to closed
-        world.setMetadata("ttt_state", new FixedMetadataValue(Main.getInstance(), GameState.CLOSED));
+        world.setMetadata("ttt_state", new FixedMetadataValue(plugin, GameState.CLOSED));
 
         // start GameThread and put it into the map
         GameThread thread = new GameThread(world);
-        thread.runTaskTimer(Main.getInstance(), 0L, Main.getInstance().getConfig().getInt("Tread.TickRate"));
+        thread.runTaskTimer(plugin, 0L, plugin.getConfig().getInt("Tread.TickRate"));
         //BukkitTask thread = new GameThread(world).runTaskTimer(Main.getInstance(), 0L, Main.getInstance().getConfig().getInt("Tread.TickRate"));
         gameThreadMap.put(world, thread);
     }
@@ -131,16 +135,22 @@ public class HandleGame implements Listener {
         player.teleport(loc);
         player.setGameMode(GameMode.ADVENTURE);
 
+        player.setMetadata("ttt_role", new FixedMetadataValue(plugin, null));
+
         List<Player> players = world.getPlayers();
 
         // lock world and start game if max players is reached
-        if(players.size() >= Main.getInstance().getConfig().getInt("Max.Players")) {
-            world.setMetadata("ttt_state", new FixedMetadataValue(Main.getInstance(), "closed"));
+        if(players.size() >= plugin.getConfig().getInt("Max.Players")) {
+            world.setMetadata("ttt_state", new FixedMetadataValue(plugin, "closed"));
             startGame(world);
         }
     }
     // removes all players from the given ttt-world
     public static void removePlayers(World world) {
+
+        if(!world.hasMetadata("ttt_world")) return;
+
+        if(!gameThreadMap.containsKey(world)) return;
 
         // init vars
         Location spawn = Objects.requireNonNull(Bukkit.getWorld("world")).getSpawnLocation();
@@ -149,6 +159,7 @@ public class HandleGame implements Listener {
         // teleport all players in the world to lobby spawn
         for(Player p : players) {
             p.teleport(spawn);
+            // TODO reset player
         }
     }
     // adds the player to the ready list and checks if the game can start
@@ -189,14 +200,14 @@ public class HandleGame implements Listener {
 
         // check if game can be started
         int playerNr = world.getPlayers().size();
-        if(playerNr >= Main.getInstance().getConfig().getInt("Min.Players") && readies.size() >= playerNr)
+        if(playerNr >= plugin.getConfig().getInt("Min.Players") && readies.size() >= playerNr)
             startGame(world);
     }
 
     // distributes the roles the the players
     public static void distributeRoles(List<Player> players) {
 
-        int maxPlayers = Main.getInstance().getConfig().getInt("Max.Players");
+        int maxPlayers = plugin.getConfig().getInt("Max.Players");
         double traitors = 0;
         double detectives = 0;
         double innocents = 0;
@@ -224,7 +235,7 @@ public class HandleGame implements Listener {
             //traitors
             for(int i = 0; i < traitors; i++) {
                 Player p = players.get(pIndex);
-                p.setMetadata("ttt_role", new FixedMetadataValue(Main.getInstance(), Role.TRAITOR));
+                p.setMetadata("ttt_role", new FixedMetadataValue(plugin, Role.TRAITOR));
                 p.sendMessage(ChatColor.DARK_RED + "You are Traitor");
                 p.playSound(p.getEyeLocation(), Sound.ENTITY_VINDICATOR_CELEBRATE, 2f ,1.3f);
                 players.remove(p);
@@ -232,7 +243,7 @@ public class HandleGame implements Listener {
             // detectives
             for(int i = 0; i < detectives; i++) {
                 Player p = players.get(pIndex);
-                p.setMetadata("ttt_role", new FixedMetadataValue(Main.getInstance(), Role.DETECTIVE));
+                p.setMetadata("ttt_role", new FixedMetadataValue(plugin, Role.DETECTIVE));
                 p.sendMessage(ChatColor.DARK_BLUE + "You are Detective");
                 p.playSound(p.getEyeLocation(), Sound.ENTITY_WANDERING_TRADER_DISAPPEARED, 2f ,0.6f);
                 players.remove(p);
@@ -240,7 +251,7 @@ public class HandleGame implements Listener {
             // innocents
             for(int i = 0; i < innocents; i++) {
                 Player p = players.get(pIndex);
-                p.setMetadata("ttt_role", new FixedMetadataValue(Main.getInstance(), Role.INNOCENT));
+                p.setMetadata("ttt_role", new FixedMetadataValue(plugin, Role.INNOCENT));
                 p.sendMessage(ChatColor.GREEN + "You are Innocent");
                 p.playSound(p.getEyeLocation(), Sound.ENTITY_PILLAGER_AMBIENT, 2f ,1.4f);
                 players.remove(p);
@@ -325,23 +336,23 @@ public class HandleGame implements Listener {
 
             // get a random item
             int index = Main.randomInt(0, itemKeys.size() - 1);
-            TTTItem tttItem = TTTItemList.genericSpawnMap.get(itemKeys.get(index));
-            ItemStack weapon = tttItem.getItem();
-            ItemStack ammo = tttItem.getAmmo();
+            TTTItemWeapon item = TTTItemList.genericSpawnMap.get(itemKeys.get(index));
+            ItemStack weapon = item.getItemStack();
+            ItemStack ammo = item.getAmmoStack();
 
             // drop weapon
-            Item weaponEnt = loc.getWorld().dropItemNaturally(loc, weapon);
-            weaponEnt.setMetadata("ttt_entity_item", new FixedMetadataValue(Main.getInstance(), true));
-            weaponEnt.setMetadata("ttt_entity_weapon_type", new FixedMetadataValue(Main.getInstance(), tttItem.getWeaponType()));
-            weaponEnt.setCustomName(tttItem.getName());
+            org.bukkit.entity.Item weaponEnt = loc.getWorld().dropItemNaturally(loc, weapon);
+            weaponEnt.setMetadata("ttt_entity_item", new FixedMetadataValue(plugin, true));
+            weaponEnt.setMetadata("ttt_entity_weapon_type", new FixedMetadataValue(plugin, item.getWeaponType()));
+            weaponEnt.setCustomName(item.getName());
             weaponEnt.setCustomNameVisible(false);
             weaponEnt.setPickupDelay(1);
 
             // drop between 3 and 5 ammo stacks
             for(int i = 0; i < Main.randomInt(3, 5); i++) {
                 // drop weapon
-                Item ammoEnt = loc.getWorld().dropItemNaturally(loc, ammo);
-                ammoEnt.setMetadata("ttt_entity_item", new FixedMetadataValue(Main.getInstance(), true));
+                org.bukkit.entity.Item ammoEnt = loc.getWorld().dropItemNaturally(loc, ammo);
+                ammoEnt.setMetadata("ttt_entity_item", new FixedMetadataValue(plugin, true));
                 ammoEnt.setPickupDelay(0);
             }
         }
@@ -359,17 +370,17 @@ public class HandleGame implements Listener {
 
             // get a random item
             int index = Main.randomInt(0, superKeys.size() - 1);
-            TTTItem tttItem = TTTItemList.superSpawnMap.get(superKeys.get(index));
-            ItemStack item = tttItem.getItem();
+            TTTItemWeapon tttItem = TTTItemList.superSpawnMap.get(superKeys.get(index));
+            ItemStack item = tttItem.getItemStack();
 
             ArmorStand stand = world.spawn(loc, ArmorStand.class);
 
             SuperItemBoxThread thread = new SuperItemBoxThread();
-            thread.runTaskTimer(Main.getInstance(), 0, 1);
+            thread.runTaskTimer(plugin, 0, 1);
 
             superItemThreadMap.put(stand, thread);
 
-            stand.setMetadata("ttt_entity_superItemBox", new FixedMetadataValue(Main.getInstance(), item));
+            stand.setMetadata("ttt_entity_superItemBox", new FixedMetadataValue(plugin, item));
             stand.setVisible(false);
             stand.setCustomName(ChatColor.LIGHT_PURPLE + "?");
             stand.setCustomNameVisible(false);
@@ -686,12 +697,14 @@ public class HandleGame implements Listener {
 
         GameThread thread = gameThreadMap.get(world);
         HandlePlayer.resetPlayer(player, thread);
+
+        player.teleport(Bukkit.getWorld("world").getSpawnLocation());
     }
 
     // stop items from merging
     @EventHandler
     public void onItemMerge(ItemMergeEvent event) {
-        Item item = event.getEntity();
+        org.bukkit.entity.Item item = event.getEntity();
         World world = item.getWorld();
 
         if(!world.hasMetadata("ttt_world")) return;
@@ -703,7 +716,7 @@ public class HandleGame implements Listener {
     // stop items from despawning
     @EventHandler
     public void onItemDespawn(ItemDespawnEvent event) {
-        Item item = event.getEntity();
+        org.bukkit.entity.Item item = event.getEntity();
         World world = item.getWorld();
 
         if(!world.hasMetadata("ttt_world")) return;
@@ -721,7 +734,7 @@ public class HandleGame implements Listener {
         Player player = (Player) event.getEntity();
 
         // init item var
-        Item item = event.getItem();
+        org.bukkit.entity.Item item = event.getItem();
         if(!item.hasMetadata("ttt_entity_item")) return;
         if(!item.hasMetadata("ttt_entity_weapon_type")) return;
 
@@ -795,6 +808,21 @@ public class HandleGame implements Listener {
         armorStand.remove();
 
         player.getInventory().addItem(item);
+    }
+
+    @EventHandler
+    public void onBeadInteraction(PlayerBedEnterEvent event) {
+        Player player = event.getPlayer();
+
+        if(!player.hasMetadata("ttt_role")) return;
+
+        System.out.println("1");
+
+        if(!player.getWorld().hasMetadata("ttt_world")) return;
+
+        System.out.println("2");
+
+        event.setCancelled(true);
     }
 
 }

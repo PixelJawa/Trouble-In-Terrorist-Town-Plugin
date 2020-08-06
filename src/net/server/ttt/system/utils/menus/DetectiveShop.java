@@ -16,7 +16,7 @@ public class DetectiveShop {
     static List<ItemStack> itemList = new ArrayList<>();
     static{
         for(String s : TTTItemList.detectiveBuyMap.keySet())
-            itemList.add(TTTItemList.detectiveBuyMap.get(s).getItem());
+            itemList.add(TTTItemList.detectiveBuyMap.get(s).getItemStack());
     }
 
     public static Inventory genInv() {

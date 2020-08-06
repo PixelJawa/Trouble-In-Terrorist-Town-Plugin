@@ -31,6 +31,7 @@ public class HandleWorldCreation {
 
         File[] files = dir.listFiles();
         assert files != null;
+
         if(files.length == 0) {
             System.out.println("[TTT] -- HandleWorldCreation --- the world prefab file is empty");
             return null;
@@ -54,6 +55,7 @@ public class HandleWorldCreation {
 
         // init world creator
         WorldCreator creator = new WorldCreator(name);
+
         World world = creator.createWorld();
 
         world.setMetadata("ttt_world", new FixedMetadataValue(Main.getInstance(), true));
@@ -92,6 +94,7 @@ public class HandleWorldCreation {
 
     // scan the game area and save the spawn locations in a yaml file
     public static void scanGameArea(World world, Location loc) {
+
         String path = world.getWorldFolder().getAbsolutePath() + File.separator + "TTT_data" + File.separator + "spawns.yml";
         File file = new File(path);
 
@@ -105,19 +108,23 @@ public class HandleWorldCreation {
         List<Location> itemSpawnList = new ArrayList<>();
         List<Location> superSpawnList = new ArrayList<>();
 
-        int radius = Main.getInstance().getConfig().getInt("Scan.Radius");
+        int radius = Main.getInstance().getConfig().getInt("scan.radius");
+
+        //List<Block> blocks = new ArrayList<>();
 
         for (int x = -radius; x < radius; x++) {
             for (int y = -radius; y < radius; y++) {
                 for (int z = -radius; z < radius; z++) {
+
                     Block block = world.getBlockAt(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z);
 
                     if(block.getType() != Material.DISPENSER) continue;
 
-                    Dispenser dispenser = (Dispenser) block;
+                    Dispenser dispenser = (Dispenser) block.getState();
                     String name = dispenser.getCustomName();
 
-                    assert name != null;
+                    if(name == null) continue;
+
                     if(name.equalsIgnoreCase("ttt_spawn"))
                         playerSpawnList.add(block.getLocation());
                     else if(name.equalsIgnoreCase("ttt_item"))
@@ -134,6 +141,12 @@ public class HandleWorldCreation {
         spawnsYML.set("playerSpawnList", playerSpawnList);
         spawnsYML.set("itemSpawnList", itemSpawnList);
         spawnsYML.set("superSpawnList", superSpawnList);
+
+        try {
+            spawnsYML.save(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
