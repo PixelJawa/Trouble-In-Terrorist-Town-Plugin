@@ -1,5 +1,7 @@
 package net.server.ttt.main;
 
+import net.server.ttt.system.commands.admin.TTTGive;
+import net.server.ttt.system.commands.admin.TTTPlayerToggle;
 import net.server.ttt.system.commands.user.TTTJoin;
 import net.server.ttt.system.commands.user.TTTReady;
 import net.server.ttt.system.handling.HandleGame;
@@ -10,9 +12,12 @@ import net.server.ttt.system.utils.YAMLManager;
 import net.server.ttt.system.utils.events.EventCaller;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
 
 import java.util.Random;
 
@@ -42,6 +47,8 @@ public class Main extends JavaPlugin {
         // register in the executor class
         getCommand("tttJoin").setExecutor(new TTTJoin());
         getCommand("tttReady").setExecutor(new TTTReady());
+        getCommand("tttGive").setExecutor(new TTTGive());
+        getCommand("tttPlayerToggle").setExecutor(new TTTPlayerToggle());
 
     }
 
@@ -51,6 +58,7 @@ public class Main extends JavaPlugin {
         // remove all ttt worlds
         for (World w : Bukkit.getWorlds() ) {
             if(w.hasMetadata("ttt_world")) {
+
                 HandleGame.removePlayers(w);
                 HandleWorldCreation.delete(w);
             }
@@ -75,31 +83,38 @@ public class Main extends JavaPlugin {
         return new Random().nextBoolean();
     }
 
-    public static boolean isWithinEntityBoundingBox(Location location, Entity entity, double scale) {
+//    public static boolean isWithinEntityBoundingBox(Location location, Entity entity, double scale) {
+//
+//        double BBmaxX = entity.getBoundingBox().getMaxX() ;
+//        double BBmaxY = entity.getBoundingBox().getMaxY() ;
+//        double BBmaxZ = entity.getBoundingBox().getMaxZ() ;
+//        double BBminX = entity.getBoundingBox().getMinX() ;
+//        double BBminY = entity.getBoundingBox().getMinY() ;
+//        double BBminZ = entity.getBoundingBox().getMinZ() ;
+//
+//        double dx = (BBmaxX - BBminX) * scale;
+//        double dy = (BBmaxY - BBminY) * scale;
+//        double dz = (BBmaxZ - BBminZ) * scale;
+//
+//        double x = location.getX();
+//        double y = location.getY();
+//        double z = location.getZ();
+//
+//
+//        return
+//                x >= BBminX - dx &&
+//                        x <= BBmaxX + dx &&
+//                        y >= BBminY - dy &&
+//                        y <= BBmaxY + dy &&
+//                        z >= BBminZ - dz &&
+//                        z <= BBmaxZ + dz ;
+//    }
+    public static boolean isWithinEntityBoundingBox(Location loc, Entity entity, double scale) {
+        BoundingBox bb = entity.getBoundingBox();
 
-        double BBmaxX = entity.getBoundingBox().getMaxX() ;
-        double BBmaxY = entity.getBoundingBox().getMaxY() ;
-        double BBmaxZ = entity.getBoundingBox().getMaxZ() ;
-        double BBminX = entity.getBoundingBox().getMinX() ;
-        double BBminY = entity.getBoundingBox().getMinY() ;
-        double BBminZ = entity.getBoundingBox().getMinZ() ;
-
-        double dx = (BBmaxX - BBminX) * scale;
-        double dy = (BBmaxY - BBminY) * scale;
-        double dz = (BBmaxZ - BBminZ) * scale;
-
-        double x = location.getX();
-        double y = location.getY();
-        double z = location.getZ();
-
-        return
-                x >= BBminX - dx &&
-                        x <= BBmaxX + dx &&
-                        y >= BBminY - dy &&
-                        y <= BBmaxY + dy &&
-                        z >= BBminZ - dz &&
-                        z <= BBmaxZ + dz ;
+        return bb.contains(loc.toVector());
     }
+
 
     public static String hideText(String s) {
         String hidden = "";
@@ -111,9 +126,9 @@ public class Main extends JavaPlugin {
         return s.replaceAll("§", "");
     }
 
-    public static double getArmor(Player player)
-    {
-        org.bukkit.inventory.PlayerInventory inv = player.getInventory();
+    public static double getArmor(LivingEntity target) {
+        EntityEquipment inv = target.getEquipment();
+
         ItemStack boots = inv.getBoots();
         ItemStack helmet = inv.getHelmet();
         ItemStack chest = inv.getChestplate();
@@ -121,6 +136,7 @@ public class Main extends JavaPlugin {
         double red = 0.0;
 
         // helm
+        if(helmet != null)
         switch (helmet.getType()) {
             case LEATHER_HELMET: red = red + 0.04; break;
             case GOLDEN_HELMET:
@@ -131,6 +147,7 @@ public class Main extends JavaPlugin {
             case DIAMOND_HELMET: red = red + 0.12; break;
         }
         // boots
+        if(boots != null)
         switch (boots.getType()) {
             case LEATHER_BOOTS:
             case GOLDEN_BOOTS:
@@ -141,6 +158,7 @@ public class Main extends JavaPlugin {
             case DIAMOND_BOOTS: red = red + 0.12; break;
         }
         // pants
+        if(pants != null)
         switch (pants.getType()) {
             case LEATHER_LEGGINGS: red = red + 0.08; break;
             case GOLDEN_LEGGINGS: red = red + 0.12; break;
@@ -149,6 +167,7 @@ public class Main extends JavaPlugin {
             case DIAMOND_LEGGINGS: red = red + 0.24; break;
         }
         // chest
+        if(chest != null)
         switch (chest.getType()) {
             case LEATHER_CHESTPLATE: red = red + 0.12; break;
             case GOLDEN_CHESTPLATE:

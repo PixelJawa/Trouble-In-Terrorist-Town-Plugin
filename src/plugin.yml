@@ -14,3 +14,6 @@ commands:
   tttGive:
     description: Gives you the tttItem based onthe given id.
     usage: /tttGive <id>
+  tttPlayerToggle:
+    description: Removes or adds the ttt_role metadata to the user.
+    usage: /tttPlayerToggle

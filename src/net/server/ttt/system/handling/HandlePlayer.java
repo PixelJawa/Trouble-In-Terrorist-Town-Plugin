@@ -8,6 +8,7 @@ import net.server.ttt.system.utils.threads.GameThread;
 import org.bukkit.Bukkit;
 import org.bukkit.EntityEffect;
 import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -75,7 +76,7 @@ public class HandlePlayer {
     }
 
     // damages the given player for the given amount (takes armor in account)
-    public static void damagePlayer(Player target, Player source, double damage, String cause) {
+    public static void damagePlayer(LivingEntity target, Player source, double damage, String cause) {
 
         PlayerTakeDamageEvent PTDEvent = new PlayerTakeDamageEvent(target, source, damage, cause);
         Bukkit.getPluginManager().callEvent(PTDEvent);
@@ -86,17 +87,18 @@ public class HandlePlayer {
         double postDamage = damage * armor;
 
         // make player spectator if damage would kill him
-        if(target.getHealth() - postDamage <= 0) {
+        if(target.getHealth() - postDamage <= 0 && target instanceof LivingEntity) {
+
             target.playEffect(EntityEffect.HURT);
             PTDEvent.setCancelled(true);
 
-            PlayerSlainEvent PSEvent = new PlayerSlainEvent(target, source, cause);
+            PlayerSlainEvent PSEvent = new PlayerSlainEvent((Player) target, source, cause);
             Bukkit.getPluginManager().callEvent(PTDEvent);
 
             if(PSEvent.isCancelled()) return;
 
-            setSpectator(target);
-            HandleGame.spawnCorpse(target.getLocation(), target, source, cause, false); // TODO head shot
+            setSpectator((Player) target);
+            HandleGame.spawnCorpse(target.getLocation(), (Player) target, source, cause, false); // TODO head shot
         }
 
         // damage entity

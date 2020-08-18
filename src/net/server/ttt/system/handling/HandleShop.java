@@ -25,6 +25,11 @@ public class HandleShop implements Listener {
         if(!player.hasMetadata("ttt_role")) return;
         Role role = (Role) player.getMetadata("ttt_role").get(0).value();
 
+        if(role == null) {
+            event.setCancelled(true);
+            return;
+        }
+
         switch (role) {
             case TRAITOR: {
                 player.openInventory(TraitorShop.genInv());

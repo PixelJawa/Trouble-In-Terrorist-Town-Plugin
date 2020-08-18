@@ -21,7 +21,9 @@ ItemIds:
 - ttt_item
 
 Entity meta:
-- ttt_entity_ -- item
+- ttt_entity_ :
+    - item
+    - bullet
 
 ---
 
@@ -31,6 +33,7 @@ Item Formatting:
 - Lore:
     - id: index 0 (hidden)
     - description: ChatColor.GRAY
+    - stats: ChatColor.DARK_GREEN
 
 - Display Name:
     - Generic Weapon: ChatColor.LIGHT_PINK

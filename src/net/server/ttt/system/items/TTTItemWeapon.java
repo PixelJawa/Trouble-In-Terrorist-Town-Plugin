@@ -8,12 +8,13 @@ public abstract class TTTItemWeapon extends TTTItem {
 
     public abstract String getAmmoId();
 
-    public abstract void consumeAmmo(Player player);
+    public abstract void consumeAmmo(Player player, ItemStack item); // from magazine
     public abstract ItemStack getAmmoStack();
     public abstract WeaponType getWeaponType();
 
-    public abstract boolean hasAmmo(Player player);
+    public abstract boolean hasOneAmmo(Player player);
+    public abstract boolean isMagLoaded(Player player);
     public abstract boolean canFireAgain(Player player);
+    public abstract boolean isNotReloading(Player player);
 
-    public abstract void sneakAction(Player player);
 }

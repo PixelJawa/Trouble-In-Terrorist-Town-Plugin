@@ -5,10 +5,14 @@ import org.bukkit.inventory.ItemStack;
 
 public abstract class TTTItem {
 
-    public abstract void leftAction(Player player);
-    public abstract void rightAction(Player player);
+    public abstract void leftAction(Player player, ItemStack item);
+    public abstract void rightAction(Player player, ItemStack item);
 
-    public abstract boolean conditionsClear(Player player);
+    public abstract void sneakStartAction(Player player, ItemStack item);
+    public abstract void sneakEndAction(Player player, ItemStack item);
+
+    public abstract boolean conditionsLeftClear(Player player);
+    public abstract boolean conditionsRightClear(Player player);
     public abstract String getId();
 
     public abstract String getName();

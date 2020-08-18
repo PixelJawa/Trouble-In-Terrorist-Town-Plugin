@@ -57,7 +57,6 @@ public class HandleGame implements Listener {
         // start GameThread and put it into the map
         GameThread thread = new GameThread(world);
         thread.runTaskTimer(plugin, 0L, plugin.getConfig().getInt("Tread.TickRate"));
-        //BukkitTask thread = new GameThread(world).runTaskTimer(Main.getInstance(), 0L, Main.getInstance().getConfig().getInt("Tread.TickRate"));
         gameThreadMap.put(world, thread);
     }
     // create a new game and transfer all players to that game
@@ -149,8 +148,6 @@ public class HandleGame implements Listener {
     public static void removePlayers(World world) {
 
         if(!world.hasMetadata("ttt_world")) return;
-
-        if(!gameThreadMap.containsKey(world)) return;
 
         // init vars
         Location spawn = Objects.requireNonNull(Bukkit.getWorld("world")).getSpawnLocation();

@@ -1,5 +1,6 @@
 package net.server.ttt.system.utils.events.player;
 
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -10,23 +11,23 @@ public class PlayerTakeDamageEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private boolean cancelled;
 
-    private Player player;
+    private LivingEntity victim;
     private Player slayer;
     private double damage;
     private String cause;
 
-    public PlayerTakeDamageEvent(Player player, Player slayer, double damage, String cause) {
-        this.player = player;
+    public PlayerTakeDamageEvent(LivingEntity victim, Player slayer, double damage, String cause) {
+        this.victim = victim;
         this.slayer = slayer;
         this.damage = damage;
         this.cause = cause;
     }
 
-    public Player getPlayer() {
-        return player;
+    public LivingEntity getVictim() {
+        return victim;
     }
-    public void setPlayer(Player player) {
-        this.player = player;
+    public void setVictim(LivingEntity victim) {
+        this.victim = victim;
     }
 
     public Player getSlayer() {
