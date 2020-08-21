@@ -1,4 +1,4 @@
-package net.server.ttt.system.items;
+package net.server.ttt.system.items.abstracts;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

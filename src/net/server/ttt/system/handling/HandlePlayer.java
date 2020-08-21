@@ -5,11 +5,10 @@ import net.server.ttt.system.utils.corpse.CorpsePacketReader;
 import net.server.ttt.system.utils.events.player.PlayerSlainEvent;
 import net.server.ttt.system.utils.events.player.PlayerTakeDamageEvent;
 import net.server.ttt.system.utils.threads.GameThread;
-import org.bukkit.Bukkit;
-import org.bukkit.EntityEffect;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,8 +74,8 @@ public class HandlePlayer {
         HandleItems.holding.remove(player);
     }
 
-    // damages the given player for the given amount (takes armor in account)
-    public static void damagePlayer(LivingEntity target, Player source, double damage, String cause) {
+    // damages the given target for the given amount (takes armor in account)
+    public static void damageTarget(LivingEntity target, Player source, double damage, String cause) {
 
         PlayerTakeDamageEvent PTDEvent = new PlayerTakeDamageEvent(target, source, damage, cause);
         Bukkit.getPluginManager().callEvent(PTDEvent);
@@ -105,6 +104,30 @@ public class HandlePlayer {
         target.setHealth(target.getHealth() - postDamage);
         target.playEffect(EntityEffect.HURT);
 
+    }
+
+    // shocks the given target for the given duration
+    public static void shockTarget(LivingEntity target, Player source, double duration, String cause) {
+        new BukkitRunnable() {
+
+            World world = target.getWorld();
+            int count = 0;
+
+            public void run() {
+
+                count ++;
+
+                target.playEffect(EntityEffect.HURT);
+                world.spawnParticle(Particle.CRIT_MAGIC, target.getEyeLocation(), 1, 0, 0, 0, 0.7, null, true);
+                world.spawnParticle(Particle.END_ROD, target.getEyeLocation(), 3, 0, 0, 0, 0.05, null, true);
+
+                world.playSound(target.getEyeLocation(), Sound.ENTITY_EVOKER_CAST_SPELL, 0.2f, 2);
+
+                if(count >= duration * 20){
+                    cancel();
+                }
+            }
+        }.runTaskTimer(Main.getInstance(), 0, 1);
     }
 
 

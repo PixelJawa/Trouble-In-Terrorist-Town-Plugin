@@ -24,7 +24,7 @@ public class EventCaller implements Listener {
         event.setCancelled(true);
         double damage = event.getDamage();
 
-        HandlePlayer.damagePlayer(target, source, damage, "melee");
+        HandlePlayer.damageTarget(target, source, damage, "melee");
     }
 
 }

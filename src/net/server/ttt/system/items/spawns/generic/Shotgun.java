@@ -2,7 +2,8 @@ package net.server.ttt.system.items.spawns.generic;
 
 import net.server.ttt.main.Main;
 import net.server.ttt.system.handling.HandlePlayer;
-import net.server.ttt.system.items.TTTItemWeapon;
+import net.server.ttt.system.items.abstracts.TTTItemWeapon;
+import net.server.ttt.system.items.abstracts.TTTItemWeaponShootable;
 import net.server.ttt.system.utils.enums.WeaponType;
 import org.bukkit.*;
 import org.bukkit.entity.Item;
@@ -13,6 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -20,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Shotgun extends TTTItemWeapon {
+public class Shotgun extends TTTItemWeaponShootable {
 
     static Map<Player, Long> lastFireMap = new HashMap<>();
     static Map<Player, Integer> magazineMap = new HashMap<>();
@@ -31,6 +33,7 @@ public class Shotgun extends TTTItemWeapon {
     static double headMultiplier = 1.2;
     static double fireRate = 0.9; // shots per second
     static String weaponName = ChatColor.LIGHT_PURPLE + "Shotty";
+    static boolean isHoldable = false;
 
     static double reloadTime = 3.5;
     static int magSize = 6;
@@ -50,7 +53,7 @@ public class Shotgun extends TTTItemWeapon {
         meta.setDisplayName(weaponName);
 
         lore.add(Main.hideText(weaponId));
-        lore.add(ChatColor.GRAY + "A short range burst weapon.");
+        lore.add(ChatColor.GRAY + "A short range weapon with extremely high burst damage.");
         lore.add(ChatColor.GRAY + " ");
         lore.add(ChatColor.GRAY + "damage/shot: " + ChatColor.DARK_GREEN + damage);
         lore.add(ChatColor.GRAY + "head multiplier: " + ChatColor.DARK_GREEN + headMultiplier + "x");
@@ -146,6 +149,7 @@ public class Shotgun extends TTTItemWeapon {
     public ItemStack getAmmoStack() {
         return ammo;
     }
+    public boolean getIsHoldable() { return isHoldable; }
 
     public void leftAction(Player player, ItemStack item) {
         reload(player, item);
@@ -165,16 +169,16 @@ public class Shotgun extends TTTItemWeapon {
 
         World world = player.getWorld();
         Location loc = player.getEyeLocation();
+        loc.setY(loc.getY() - 0.3);
+
         Vector vec = loc.getDirection();
         Map<Item, Vector> directions = new HashMap<>();
-
-        loc.setY(loc.getY() - 0.3);
 
         List<Item> list = new ArrayList<>();
 
         for(int i = 0; i < shots; i ++) {
 
-            Item item = world.dropItem(loc, new ItemStack(Material.STONE_BUTTON));
+            Item item = world.dropItem(loc, new ItemStack(Material.DARK_OAK_BUTTON));
 
             item.setMetadata("ttt_entity_bullet", new FixedMetadataValue(Main.getInstance(), true));
             item.setPickupDelay(Integer.MAX_VALUE);
@@ -185,6 +189,7 @@ public class Shotgun extends TTTItemWeapon {
 
             Vector v = Vector.getRandom();
             v.setX(v.getX() - 0.5f);
+            v.setY(v.getY() - 0.5f);
             v.setZ(v.getZ() - 0.5f);
             v.multiply(0.5);
 
@@ -215,13 +220,17 @@ public class Shotgun extends TTTItemWeapon {
                     diff = entLoc.toVector().subtract(prevLoc.get(ent).toVector());
                     double angle = Math.abs((float)Math.toDegrees(diff.angle(directions.get(ent))) );
 
-                    for(LivingEntity e : world.getLivingEntities()) {
-                        if(e == player) continue;
-                        if (Main.isWithinEntityBoundingBox(entLoc, e, 1)) {
-                            HandlePlayer.damagePlayer(e, player, damage, weaponName);
-                            toRemove.add(ent);
-                            continue;
-                        }
+                    Location entPrevLoc = prevLoc.get(ent);
+
+                    // hit detection
+                    RayTraceResult rayTraceResult = world.rayTraceEntities(entPrevLoc, directions.get(ent), entPrevLoc.distance(entLoc));
+                    if(rayTraceResult != null
+                            && rayTraceResult.getHitEntity() != null
+                            && rayTraceResult.getHitEntity() instanceof LivingEntity
+                            && rayTraceResult.getHitEntity() != player) {
+                        HandlePlayer.damageTarget((LivingEntity) rayTraceResult.getHitEntity(), player, damage, weaponName);
+                        toRemove.add(ent);
+                        continue;
                     }
 
                     // check for wall collision

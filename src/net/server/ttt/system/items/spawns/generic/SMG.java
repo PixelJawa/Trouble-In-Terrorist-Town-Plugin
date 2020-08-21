@@ -24,30 +24,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Pistol extends TTTItemWeaponShootable {
+public class SMG extends TTTItemWeaponShootable {
 
     static Map<Player, Long> lastFireMap = new HashMap<>();
     static Map<Player, Integer> magazineMap = new HashMap<>();
     static List<Player> reloading = new ArrayList<>();
 
-    static double damage = 3.5;
-    static double headMultiplier = 1.4;
-    static double fireRate = 1.75; // shots per second
-    static String weaponName = ChatColor.LIGHT_PURPLE + "Pistol";
-    static boolean isHoldable = false;
+    static double damage = 0.6;
+    static double headMultiplier = 1.2;
+    static double fireRate = 24; // shots per second
+    static String weaponName = ChatColor.LIGHT_PURPLE + "SMG";
+    static boolean isHoldable = true;
 
-    static double reloadTime = 1.75;
-    static int magSize = 7;
-    static double range = 250;
-    static double accuracy = 0.90;
+    static double reloadTime = 3.5;
+    static int magSize = 38;
+    static double range = 200;
+    static double accuracy = 0.75;
 
-    static WeaponType weaponType = WeaponType.SECONDARY;
-    static int ammoBatchAmount = 12;
-    static String weaponId = "ttt_item_weapon_pistol";
-    static String ammoId = "ttt_item_ammo_pistol";
+    static WeaponType weaponType = WeaponType.PRIMARY;
+    static int ammoBatchAmount = 24;
+    static String weaponId = "ttt_item_weapon_smg";
+    static String ammoId = "ttt_item_ammo_smg";
 
     // weapon
-    static ItemStack weapon = new ItemStack(Material.WOODEN_HOE, 1);
+    static ItemStack weapon = new ItemStack(Material.GOLDEN_PICKAXE, 1);
     static {
         ArrayList<String> lore = new ArrayList<>();
         ItemMeta meta = weapon.getItemMeta();
@@ -55,7 +55,7 @@ public class Pistol extends TTTItemWeaponShootable {
         meta.setDisplayName(weaponName);
 
         lore.add(Main.hideText(weaponId));
-        lore.add(ChatColor.GRAY + "An average pistol for medium ranges.");
+        lore.add(ChatColor.GRAY + "A shot range weapon with an extremely high fire rate.");
         lore.add(ChatColor.GRAY + " ");
         lore.add(ChatColor.GRAY + "damage: " + ChatColor.DARK_GREEN + damage);
         lore.add(ChatColor.GRAY + "head multiplier: " + ChatColor.DARK_GREEN + headMultiplier + "x");
@@ -69,12 +69,12 @@ public class Pistol extends TTTItemWeaponShootable {
     }
 
     // ammo
-    static ItemStack ammo = new ItemStack(Material.IRON_NUGGET, ammoBatchAmount);
+    static ItemStack ammo = new ItemStack(Material.NETHER_WART, ammoBatchAmount);
     static {
         ArrayList<String> lore = new ArrayList<>();
         ItemMeta meta = ammo.getItemMeta();
 
-        meta.setDisplayName(ChatColor.DARK_GRAY + "Pistol Ammo");
+        meta.setDisplayName(ChatColor.DARK_GRAY + "SMG Ammo");
         lore.add(Main.hideText(ammoId));
 
         meta.setLore(lore);
@@ -160,7 +160,7 @@ public class Pistol extends TTTItemWeaponShootable {
         lastFireMap.put(player, System.currentTimeMillis());
     }
     public void sneakStartAction(Player player, ItemStack item) {
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 3, false, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 2, false, false, false));
     }
     public void sneakEndAction(Player player, ItemStack item) {
         player.removePotionEffect(PotionEffectType.SLOW);
@@ -173,13 +173,13 @@ public class Pistol extends TTTItemWeaponShootable {
         loc.setY(loc.getY() - 0.3);
         Vector vec = loc.getDirection();
 
-        Item item = world.dropItem(loc, new ItemStack(Material.SPRUCE_BUTTON));
+        Item item = world.dropItem(loc, new ItemStack(Material.BIRCH_BUTTON));
 
         item.setMetadata("ttt_entity_bullet", new FixedMetadataValue(Main.getInstance(), true));
         item.setPickupDelay(Integer.MAX_VALUE);
         item.setGravity(false);
 
-        Vector direction = vec.clone().multiply(4); // change to change bullet speed
+        Vector direction = vec.clone().multiply(2);
         Vector v = Vector.getRandom();
         v.setX(v.getX() - 0.5f);
         v.setY(v.getY() - 0.5f);
@@ -200,6 +200,7 @@ public class Pistol extends TTTItemWeaponShootable {
                 entLoc = item.getLocation();
                 item.setVelocity(direction);
                 shotParticles(entLoc);
+
 
                 // hit detection
                 RayTraceResult rayTraceResult = world.rayTraceEntities(prevLoc, direction, prevLoc.distance(entLoc));
@@ -231,7 +232,7 @@ public class Pistol extends TTTItemWeaponShootable {
     }
     public void shotParticles(Location loc) {
         World world = loc.getWorld();
-        world.spawnParticle(Particle.SPELL, loc, 1, 0, 0, 0, 0, null, true);
+        world.spawnParticle(Particle.REDSTONE, loc, 1, 0, 0, 0, 0, new Particle.DustOptions(Color.NAVY, 0.5f), true);
     }
     public void shotSound(Location loc) {
         // TODO this

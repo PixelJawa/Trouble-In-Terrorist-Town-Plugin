@@ -2,9 +2,8 @@ package net.server.ttt.system.handling;
 
 import net.minecraft.server.v1_15_R1.*;
 import net.server.ttt.main.Main;
-import net.server.ttt.system.items.TTTItem;
 import net.server.ttt.system.items.TTTItemList;
-import net.server.ttt.system.items.TTTItemWeapon;
+import net.server.ttt.system.items.abstracts.TTTItemWeapon;
 import net.server.ttt.system.utils.corpse.CorpseManager;
 import net.server.ttt.system.utils.enums.*;
 import net.server.ttt.system.utils.corpse.Corpse;

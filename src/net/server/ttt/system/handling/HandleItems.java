@@ -1,8 +1,10 @@
 package net.server.ttt.system.handling;
 
 import net.server.ttt.main.Main;
-import net.server.ttt.system.items.TTTItem;
+import net.server.ttt.system.items.abstracts.TTTItem;
 import net.server.ttt.system.items.TTTItemList;
+import net.server.ttt.system.items.abstracts.TTTItemWeapon;
+import net.server.ttt.system.utils.enums.WeaponType;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -10,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -77,7 +80,8 @@ public class HandleItems implements Listener {
             if(fromID != null) {
                 // init tttItem var
                 TTTItem tttItem = TTTItemList.totalTTTItemMap.get(fromID);
-                tttItem.sneakEndAction(player, fromItem);
+                if(tttItem instanceof TTTItemWeapon)
+                    tttItem.sneakEndAction(player, fromItem);
             }
 
             return;
@@ -128,6 +132,10 @@ public class HandleItems implements Listener {
         String id = Main.revealText(meta.getLore().get(0));
 
         if (TTTItemList.totalTTTItemMap.containsKey(id) && id.contains("ttt_item_weapon")) {
+
+            TTTItemWeapon tttItem = (TTTItemWeapon) TTTItemList.totalTTTItemMap.get(id);
+
+            if(!tttItem.getIsHoldable()) return;
 
             // create shield toItem stack
             ItemStack shield = new ItemStack(Material.SHIELD, 1);
@@ -218,15 +226,64 @@ public class HandleItems implements Listener {
         }
 
         // cast action
-        if(action.name().contains("LEFT_CLICK") && tttItem.conditionsLeftClear(player)) {
-            tttItem.leftAction(player, item);
+        if(action.name().contains("LEFT_CLICK")) {
+            if(tttItem.conditionsLeftClear(player))
+                tttItem.leftAction(player, item);
             event.setCancelled(true);
         }
-        else if(action.name().contains("RIGHT_CLICK") && tttItem.conditionsRightClear(player)) {
-            tttItem.rightAction(player, item);
+        else if(action.name().contains("RIGHT_CLICK")) {
+            if(tttItem.conditionsRightClear(player))
+                tttItem.rightAction(player, item);
             event.setCancelled(true);
         }
 
+    }
+
+    @EventHandler
+    public void onHitEntity(EntityDamageByEntityEvent event) {
+
+        // init player var
+        if(!(event.getDamager() instanceof Player)) return;
+        Player player = (Player) event.getDamager();
+
+        // abort if the event has no item
+        if(!player.getEquipment().getItemInMainHand().getType().isAir()) return;
+        // abort if player has no role meta
+        if(!player.hasMetadata("ttt_role")) return;
+
+        // init world var
+        World world = player.getWorld();
+
+        // check if combat is enabled
+        //if(!HandleGame.gameThreadMap.containsKey(world)) return; TODO uncomment this
+        //if(!HandleGame.gameThreadMap.get(world).isCombat) return; TODO uncomment this
+
+        // init item
+        ItemStack item = player.getEquipment().getItemInMainHand();
+
+        // abort if item has not meta
+        if(!item.hasItemMeta()) return;
+
+        // init meta var
+        ItemMeta meta = item.getItemMeta();
+
+        // abort if item has no lore or meta
+        if(meta == null) return;
+        if(!meta.hasLore()) return;
+
+        // init id var
+        String id = Main.revealText(meta.getLore().get(0));
+
+        if(!id.contains("ttt_item")) return;
+        if(!TTTItemList.totalTTTItemMap.containsKey(id)) return;
+
+        // abort if weapon is melee weapon
+        if(id.contains("ttt_item_weapon")) {
+            TTTItem tttItem = TTTItemList.totalTTTItemMap.get(id);
+            if( ((TTTItemWeapon) tttItem).getWeaponType() == WeaponType.MELEE) return;
+        }
+
+        event.setDamage(0.5);
     }
 
     @EventHandler

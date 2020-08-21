@@ -2,7 +2,8 @@ package net.server.ttt.system.items.spawns.generic;
 
 import net.server.ttt.main.Main;
 import net.server.ttt.system.handling.HandlePlayer;
-import net.server.ttt.system.items.TTTItemWeapon;
+import net.server.ttt.system.items.abstracts.TTTItemWeapon;
+import net.server.ttt.system.items.abstracts.TTTItemWeaponShootable;
 import net.server.ttt.system.utils.enums.WeaponType;
 import org.bukkit.*;
 import org.bukkit.entity.LivingEntity;
@@ -20,20 +21,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Scout extends TTTItemWeapon {
+public class Scout extends TTTItemWeaponShootable {
 
     static Map<Player, Long> lastFireMap = new HashMap<>();
     static Map<Player, Integer> magazineMap = new HashMap<>();
     static List<Player> reloading = new ArrayList<>();
 
-    static double damage = 8;
-    static double headMultiplier = 2.5;
+    static double damage = 7;
+    static double headMultiplier = 3.0;
     static double fireRate = 0.7; // shots per second
     static String weaponName = ChatColor.LIGHT_PURPLE + "Scout";
+    static boolean isHoldable = false;
 
     static double reloadTime = 2.75;
     static int magSize = 4;
-    static double range = 500;
+    static double range = 1000;
 
     static WeaponType weaponType = WeaponType.PRIMARY;
     static int ammoBatchAmount = 4;
@@ -49,7 +51,7 @@ public class Scout extends TTTItemWeapon {
         meta.setDisplayName(weaponName);
 
         lore.add(Main.hideText(weaponId));
-        lore.add(ChatColor.GRAY + "A rifle for long ranges.");
+        lore.add(ChatColor.GRAY + "A long range high damage rifle.");
         lore.add(ChatColor.GRAY + " ");
         lore.add(ChatColor.GRAY + "damage: " + ChatColor.DARK_GREEN + damage);
         lore.add(ChatColor.GRAY + "head multiplier: " + ChatColor.DARK_GREEN + headMultiplier + "x");
@@ -145,6 +147,7 @@ public class Scout extends TTTItemWeapon {
     public ItemStack getAmmoStack() {
         return ammo;
     }
+    public boolean getIsHoldable() { return isHoldable; }
 
     public void leftAction(Player player, ItemStack item) {
         reload(player, item);
@@ -183,7 +186,7 @@ public class Scout extends TTTItemWeapon {
             for(LivingEntity e : world.getLivingEntities()) {
                 if(e == player) continue;
                 if (Main.isWithinEntityBoundingBox(loc, e, 1)) {
-                    HandlePlayer.damagePlayer(e, player, damage, weaponName);
+                    HandlePlayer.damageTarget(e, player, damage, weaponName);
                     return;
                 }
             }
